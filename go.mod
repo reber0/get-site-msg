@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/chromedp/cdproto v0.0.0-20220515234810-83d799542a04
 	github.com/chromedp/chromedp v0.8.2
-	github.com/reber0/go-common v1.3.0
+	github.com/reber0/go-common v1.5.0
 	github.com/remeh/sizedwaitgroup v1.0.0
 	github.com/xuri/excelize/v2 v2.6.0
 	go.uber.org/ratelimit v0.2.0
