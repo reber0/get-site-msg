@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 15:25:43
- * @LastEditTime: 2022-06-18 00:45:42
+ * @LastEditTime: 2022-09-26 12:11:12
  */
 package core
 
@@ -21,6 +21,7 @@ func Run() {
 		chromedp.Flag("no-sandbox", true),                 // 是否关闭沙盒
 		chromedp.Flag("mute-audio", false),                // 是否静音
 		chromedp.Flag("hide-scrollbars", false),           // 是否隐藏滚动条
+		chromedp.Flag("ignore-certificate-errors", true),  // 忽略网站证书错误
 		chromedp.UserAgent(`Mozilla/5.0 (Windows NT 10.0; WOW64; rv:78.0) Gecko/20100101 Firefox/78.0`),
 		chromedp.WindowSize(1280, 800),
 	}
@@ -38,11 +39,11 @@ func Run() {
 	})
 
 	// 开始获取信息
-	for _, url := range global.Targets {
+	for _, targetURL := range global.Targets {
 		global.Limiter.Take()
 		global.WaitGroup.Add()
 
-		go GetSiteMsg(url, ctx)
+		go GetSiteMsg(targetURL, ctx)
 	}
 	global.WaitGroup.Wait()
 
