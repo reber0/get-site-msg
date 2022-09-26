@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 11:30:35
- * @LastEditTime: 2022-07-22 11:00:47
+ * @LastEditTime: 2022-09-26 13:42:54
  */
 package global
 
@@ -34,6 +34,8 @@ var (
 	WaitGroup sizedwaitgroup.SizedWaitGroup // 控制总的并发数
 
 	Lock sync.Mutex
+
+	ChromedpStatus bool // Chromedp 状态
 
 	Targets []string
 	Result  [][]interface{}

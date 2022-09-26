@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 11:33:08
- * @LastEditTime: 2022-09-26 12:40:51
+ * @LastEditTime: 2022-09-26 17:46:36
  */
 package core
 
@@ -22,14 +22,11 @@ import (
 func GetSiteMsg(targetURL string, ctx context.Context) {
 	defer global.WaitGroup.Done()
 
-	cloneCtx, cancel := chromedp.NewContext(ctx)
-	defer cancel()
-	cloneCtx, cancel = context.WithTimeout(cloneCtx, time.Duration(global.Opts.TimeOut)*time.Second)
-	defer cancel()
+	cloneCtx, cancelCloneCtx := chromedp.NewContext(ctx)
+	defer cancelCloneCtx()
+	cloneCtx, cancelCloneCtxWithTimeout := context.WithTimeout(cloneCtx, time.Duration(global.Opts.TimeOut)*time.Second)
+	defer cancelCloneCtxWithTimeout()
 
-	if targetURL == "" {
-		return
-	}
 	targetURL = strings.TrimRight(targetURL, "/")
 	if !strings.HasPrefix(targetURL, "http") {
 		targetURL = fmt.Sprintf("http://%s/", targetURL)
@@ -41,19 +38,19 @@ func GetSiteMsg(targetURL string, ctx context.Context) {
 	isHttpsScheme1 := strings.Contains(html, "Instead use the HTTPS scheme to access this URL")
 	isHttpsScheme2 := strings.Contains(html, "The plain HTTP request was sent to HTTPS port")
 	isHttpsScheme3 := strings.Contains(html, "This combination of host and port requires TLS")
-	isHttpsScheme4 := strings.Contains(html, "400 Bad Request")
-	isHttpsScheme5 := strings.Contains(html, "Client sent an HTTP request to an HTTPS server")
-	if statusCode == 400 && !(isHttpsScheme1 && isHttpsScheme2 && isHttpsScheme3 && isHttpsScheme4 && isHttpsScheme5) {
-		fmt.Printf("%s 需要 https 访问\n", nowURL)
+	isHttpsScheme4 := strings.Contains(html, "Client sent an HTTP request to an HTTPS server")
+	if statusCode == 400 && !(isHttpsScheme1 && isHttpsScheme2 && isHttpsScheme3 && isHttpsScheme4) {
+		global.Log.Info(fmt.Sprintf("%s 需要 https 访问", nowURL))
 		targetURL = strings.ReplaceAll(targetURL, "http://", "https://")
 		statusCode, title, nowURL = httpsReq(cloneCtx, targetURL)
 	}
 
-	fmt.Printf("[%d] [%s] %s\n", statusCode, title, nowURL)
+	fmt.Println(statusCode, title, nowURL)
+	// global.Log.Info(fmt.Sprintf("[%d] [%s] %s", statusCode, title, nowURL))
 
-	global.Lock.Lock()
-	global.Result = append(global.Result, []interface{}{targetURL, statusCode, title, nowURL})
-	global.Lock.Unlock()
+	// global.Lock.Lock()
+	// global.Result = append(global.Result, []interface{}{targetURL, statusCode, title, nowURL})
+	// global.Lock.Unlock()
 }
 
 func httpReq(cloneCtx context.Context, targetURL string) (int64, string, string, string) {
@@ -76,11 +73,11 @@ func httpReq(cloneCtx context.Context, targetURL string) (int64, string, string,
 				statusCode = response.Status
 			}
 		case *page.EventJavascriptDialogOpening:
-			fmt.Println("closing alert:", ev.Message)
+			fmt.Println("closing dialog:", ev.Message)
 			go func() {
-				//自动关闭 alert 对话框
+				// 自动关闭 Dialog 对话框
 				if err := chromedp.Run(cloneCtx,
-					//注释掉下一行可以更清楚地看到效果
+					// 注释掉下一行可以更清楚地看到效果
 					page.HandleJavaScriptDialog(true),
 				); err != nil {
 					panic(err)
@@ -92,9 +89,9 @@ func httpReq(cloneCtx context.Context, targetURL string) (int64, string, string,
 	})
 
 	// 请求页面，获取 title
-	chromedp.Run(cloneCtx, chromedp.Tasks{
+	err := chromedp.Run(cloneCtx, chromedp.Tasks{
 		chromedp.Navigate(targetURL),
-		chromedp.WaitReady("body"),
+		chromedp.WaitReady("body", chromedp.ByQuery),
 		// chromedp.SendKeys(`input[name=code]`, "3333"),
 		// // chromedp.SetValue(`#input_code`, `3333`, chromedp.ByID),
 		// chromedp.Click(`/html/body/form/input[2]`, chromedp.BySearch),
@@ -106,6 +103,18 @@ func httpReq(cloneCtx context.Context, targetURL string) (int64, string, string,
 		chromedp.Title(&title),
 		chromedp.OuterHTML("html", &html),
 	})
+	if err != nil {
+		global.Log.Error(targetURL + " " + err.Error())
+
+		// if err := chromedp.Run(cloneCtx, page.Close()); err != nil {
+		// 	// panic(err)
+		// 	fmt.Println(err)
+		// }
+
+		if err.Error() == "context canceled" {
+			global.ChromedpStatus = false
+		}
+	}
 
 	if nowURL == "" {
 		nowURL = targetURL
@@ -133,11 +142,11 @@ func httpsReq(cloneCtx context.Context, targetURL string) (int64, string, string
 				statusCode = response.Status
 			}
 		case *page.EventJavascriptDialogOpening:
-			fmt.Println("closing alert:", ev.Message)
+			fmt.Println("closing dialog:", ev.Message)
 			go func() {
-				//自动关闭 alert 对话框
+				// 自动关闭 Dialog 对话框
 				if err := chromedp.Run(cloneCtx,
-					//注释掉下一行可以更清楚地看到效果
+					// 注释掉下一行可以更清楚地看到效果
 					page.HandleJavaScriptDialog(true),
 				); err != nil {
 					panic(err)
@@ -149,7 +158,7 @@ func httpsReq(cloneCtx context.Context, targetURL string) (int64, string, string
 	})
 
 	// 请求页面，获取 title
-	chromedp.Run(cloneCtx, chromedp.Tasks{
+	err := chromedp.Run(cloneCtx, chromedp.Tasks{
 		chromedp.Navigate(targetURL),
 		chromedp.WaitReady("body"),
 		// chromedp.SendKeys(`input[name=code]`, "3333"),
@@ -162,6 +171,13 @@ func httpsReq(cloneCtx context.Context, targetURL string) (int64, string, string
 		chromedp.Location(&nowURL),
 		chromedp.Title(&title),
 	})
+	if err != nil {
+		global.Log.Error(targetURL + " " + err.Error())
+
+		if err.Error() == "context canceled" {
+			global.ChromedpStatus = false
+		}
+	}
 
 	if nowURL == "" {
 		nowURL = targetURL

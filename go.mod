@@ -3,8 +3,8 @@ module gsm
 go 1.18
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20220515234810-83d799542a04
-	github.com/chromedp/chromedp v0.8.2
+	github.com/chromedp/cdproto v0.0.0-20220812200530-d0d83820bffc
+	github.com/chromedp/chromedp v0.8.4
 	github.com/reber0/go-common v1.5.0
 	github.com/remeh/sizedwaitgroup v1.0.0
 	github.com/xuri/excelize/v2 v2.6.0
@@ -33,6 +33,6 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20220408190544-5352b0902921 // indirect
 	golang.org/x/net v0.0.0-20220526153639-5463443f8c37 // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
