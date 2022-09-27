@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 21:28:11
- * @LastEditTime: 2022-06-21 13:04:10
+ * @LastEditTime: 2022-09-27 12:45:37
  */
 package entry
 
@@ -25,7 +25,7 @@ func ParseOptions() {
 	flag.IntVar(&global.Opts.Rate, "r", 10, "扫描速率")
 	flag.IntVar(&global.Opts.TimeOut, "t", 10, "超时时间")
 	flag.IntVar(&global.Opts.WaitTime, "w", 2, "等待时间(等待页面渲染的时间)")
-	flag.BoolVar(&global.Opts.IsHeadless, "show", false, "是否使用无头模式 (default false)")
+	flag.BoolVar(&global.Opts.IsHeadless, "y", false, "是否使用无头模式 (default false)")
 	flag.StringVar(&global.Opts.OutPut, "O", "", "将结果保存到 xlsx 文件")
 
 	flag.Parse() // 通过调用 flag.Parse() 来对命令行参数进行解析
