@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 11:33:08
- * @LastEditTime: 2022-09-27 10:45:51
+ * @LastEditTime: 2022-09-27 16:40:22
  */
 package core
 
@@ -19,13 +19,14 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-func GetSiteMsg(url string, ctx context.Context) {
+func GetSiteMsg(url string) {
 	defer global.WaitGroup.Done()
 
-	cloneCtx, cancelCloneCtx := chromedp.NewContext(ctx)
-	defer cancelCloneCtx()
-	cloneCtx, cancelCloneCtxWithTimeout := context.WithTimeout(cloneCtx, time.Duration(global.Opts.TimeOut)*time.Second)
-	defer cancelCloneCtxWithTimeout()
+	ctx := <-global.ChCtx
+
+	// 设置 timeout，用于请求网页的超时
+	cloneCtx, cancel := context.WithTimeout(ctx.CloneCtx, time.Duration(global.Opts.TimeOut)*time.Second)
+	defer cancel()
 
 	targetURL := strings.TrimRight(url, "/")
 	if !strings.HasPrefix(targetURL, "http") {
@@ -53,6 +54,9 @@ func GetSiteMsg(url string, ctx context.Context) {
 	global.Lock.Lock()
 	global.Result = append(global.Result, []interface{}{targetURL, statusCode, title, nowURL})
 	global.Lock.Unlock()
+
+	// 重新放入 channel
+	global.ChCtx <- ctx
 }
 
 func httpReq(cloneCtx context.Context, targetURL string) (int64, string, string, string) {
@@ -61,7 +65,7 @@ func httpReq(cloneCtx context.Context, targetURL string) (int64, string, string,
 	var nowURL string
 	var html string
 
-	// 监听事件，用于获取当前 URL 和 StatusCode
+	// 监听事件，用于获取 StatusCode
 	chromedp.ListenTarget(cloneCtx, func(ev interface{}) {
 		switch ev := ev.(type) {
 		case *network.EventRequestWillBeSent:

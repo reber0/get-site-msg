@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 15:25:43
- * @LastEditTime: 2022-09-27 13:08:24
+ * @LastEditTime: 2022-09-27 16:37:11
  */
 package core
 
@@ -38,6 +38,20 @@ func Run() {
 		chromedp.Navigate("about:blank"),
 	})
 
+	for i := 0; i < global.Opts.Rate; i++ {
+		cloneCtx, cancel := chromedp.NewContext(ctx)
+
+		// open blank tab
+		chromedp.Run(cloneCtx, chromedp.Tasks{
+			chromedp.Navigate("about:blank"),
+		})
+
+		var ctxTmp global.Ctx
+		ctxTmp.CloneCtx = cloneCtx
+		ctxTmp.CloneCancel = cancel
+		global.ChCtx <- ctxTmp
+	}
+
 	// 开始获取信息
 	for _, targetURL := range global.Targets {
 		if targetURL == "" {
@@ -47,12 +61,17 @@ func Run() {
 		if global.ChromedpStatus {
 			global.Limiter.Take()
 			global.WaitGroup.Add()
-			go GetSiteMsg(targetURL, ctx)
+			go GetSiteMsg(targetURL)
 		} else {
 			break
 		}
 	}
 	global.WaitGroup.Wait()
+
+	close(global.ChCtx)
+	for ctx := range global.ChCtx {
+		ctx.CloneCancel()
+	}
 
 	if global.Opts.OutPut != "" {
 		Save2Excel("Sheet1")
