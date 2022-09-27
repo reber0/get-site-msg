@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 15:25:43
- * @LastEditTime: 2022-09-26 16:23:47
+ * @LastEditTime: 2022-09-27 13:08:24
  */
 package core
 
@@ -19,7 +19,7 @@ func Run() {
 		chromedp.Flag("no-default-browser-check", true),        // 启动 chrome 的时候不检查默认浏览器
 		chromedp.Flag("headless", global.Opts.IsHeadless),      // 是否无头
 		chromedp.Flag("no-sandbox", true),                      // 是否关闭沙盒
-		chromedp.Flag("mute-audio", false),                     // 是否静音
+		chromedp.Flag("mute-audio", true),                      // 是否静音
 		chromedp.Flag("hide-scrollbars", false),                // 是否隐藏滚动条
 		chromedp.Flag("ignore-certificate-errors", true),       // 忽略网站证书错误
 		chromedp.Flag("blink-settings", "imagesEnabled=false"), // 禁止加载图片
