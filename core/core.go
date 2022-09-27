@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 11:33:08
- * @LastEditTime: 2022-09-27 16:40:22
+ * @LastEditTime: 2022-09-27 17:03:09
  */
 package core
 
@@ -22,10 +22,10 @@ import (
 func GetSiteMsg(url string) {
 	defer global.WaitGroup.Done()
 
-	ctx := <-global.ChCtx
+	tabCtx := <-global.ChTabCtx
 
 	// 设置 timeout，用于请求网页的超时
-	cloneCtx, cancel := context.WithTimeout(ctx.CloneCtx, time.Duration(global.Opts.TimeOut)*time.Second)
+	cloneCtx, cancel := context.WithTimeout(tabCtx.Ctx, time.Duration(global.Opts.TimeOut)*time.Second)
 	defer cancel()
 
 	targetURL := strings.TrimRight(url, "/")
@@ -56,7 +56,7 @@ func GetSiteMsg(url string) {
 	global.Lock.Unlock()
 
 	// 重新放入 channel
-	global.ChCtx <- ctx
+	global.ChTabCtx <- tabCtx
 }
 
 func httpReq(cloneCtx context.Context, targetURL string) (int64, string, string, string) {

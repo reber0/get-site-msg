@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 15:25:43
- * @LastEditTime: 2022-09-27 16:37:11
+ * @LastEditTime: 2022-09-27 17:02:04
  */
 package core
 
@@ -46,10 +46,10 @@ func Run() {
 			chromedp.Navigate("about:blank"),
 		})
 
-		var ctxTmp global.Ctx
-		ctxTmp.CloneCtx = cloneCtx
-		ctxTmp.CloneCancel = cancel
-		global.ChCtx <- ctxTmp
+		var ctxTmp global.TabCtx
+		ctxTmp.Ctx = cloneCtx
+		ctxTmp.Cancel = cancel
+		global.ChTabCtx <- ctxTmp
 	}
 
 	// 开始获取信息
@@ -68,9 +68,9 @@ func Run() {
 	}
 	global.WaitGroup.Wait()
 
-	close(global.ChCtx)
-	for ctx := range global.ChCtx {
-		ctx.CloneCancel()
+	close(global.ChTabCtx)
+	for ctx := range global.ChTabCtx {
+		ctx.Cancel()
 	}
 
 	if global.Opts.OutPut != "" {

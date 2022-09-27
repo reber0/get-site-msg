@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 11:30:03
- * @LastEditTime: 2022-09-27 15:34:58
+ * @LastEditTime: 2022-09-27 17:01:29
  */
 package entry
 
@@ -30,7 +30,7 @@ func AppInit() {
 	global.WaitGroup = sizedwaitgroup.New(global.Opts.Rate)
 
 	global.ChromedpStatus = true
-	global.ChCtx = make(chan global.Ctx, global.Opts.Rate)
+	global.ChTabCtx = make(chan global.TabCtx, global.Opts.Rate)
 
 	global.Targets = utils.FileEachLineRead(global.Opts.TargetFile)
 	global.Result = make([][]interface{}, 0, len(global.Targets))
