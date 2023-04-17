@@ -1,4 +1,4 @@
-module gsm
+module github.com/reber0/get-site-msg
 
 go 1.18
 
