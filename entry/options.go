@@ -2,17 +2,17 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 21:28:11
- * @LastEditTime: 2022-09-27 12:45:37
+ * @LastEditTime: 2023-04-17 08:48:26
  */
 package entry
 
 import (
 	"flag"
 	"fmt"
-	"gsm/global"
 	"os"
 	"strings"
 
+	"github.com/reber0/get-site-msg/global"
 	"github.com/reber0/go-common/utils"
 )
 

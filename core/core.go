@@ -2,20 +2,20 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 11:33:08
- * @LastEditTime: 2022-09-27 17:03:09
+ * @LastEditTime: 2023-04-17 08:46:23
  */
 package core
 
 import (
 	"context"
 	"fmt"
-	"gsm/global"
 	"strings"
 	"time"
 
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
+	"github.com/reber0/get-site-msg/global"
 	"github.com/xuri/excelize/v2"
 )
 

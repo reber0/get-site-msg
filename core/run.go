@@ -2,15 +2,15 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 15:25:43
- * @LastEditTime: 2022-09-27 17:02:04
+ * @LastEditTime: 2023-04-17 08:48:36
  */
 package core
 
 import (
 	"context"
-	"gsm/global"
 
 	"github.com/chromedp/chromedp"
+	"github.com/reber0/get-site-msg/global"
 )
 
 func Run() {

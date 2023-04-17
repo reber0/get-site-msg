@@ -2,14 +2,14 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 11:30:03
- * @LastEditTime: 2022-09-27 17:01:29
+ * @LastEditTime: 2023-04-17 08:48:19
  */
 package entry
 
 import (
-	"gsm/global"
 	"os"
 
+	"github.com/reber0/get-site-msg/global"
 	"github.com/reber0/go-common/mylog"
 	"github.com/reber0/go-common/utils"
 	"github.com/remeh/sizedwaitgroup"
