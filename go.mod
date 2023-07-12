@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/chromedp/cdproto v0.0.0-20220812200530-d0d83820bffc
 	github.com/chromedp/chromedp v0.8.4
-	github.com/reber0/go-common v1.5.0
+	github.com/reber0/goutils v0.0.2
 	github.com/remeh/sizedwaitgroup v1.0.0
 	github.com/xuri/excelize/v2 v2.6.0
 	go.uber.org/ratelimit v0.2.0
@@ -25,6 +25,7 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/nsf/termbox-go v1.1.1 // indirect
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.1 // indirect
 	github.com/xuri/efp v0.0.0-20220603152613-6918739fd470 // indirect

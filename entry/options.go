@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 21:28:11
- * @LastEditTime: 2023-04-17 08:48:26
+ * @LastEditTime: 2023-07-12 12:47:17
  */
 package entry
 
@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/reber0/get-site-msg/global"
-	"github.com/reber0/go-common/utils"
+	"github.com/reber0/goutils"
 )
 
 //解析命令行参数，得到所有参数信息
@@ -49,7 +49,7 @@ func checkOption() {
 		flag.Usage()
 		os.Exit(0)
 	}
-	if !utils.IsFileExist(global.Opts.TargetFile) {
+	if !goutils.IsFileExist(global.Opts.TargetFile) {
 		msg := fmt.Sprintf("目标文件 %s 不存在 !", global.Opts.TargetFile)
 		global.Log.Error(msg)
 		os.Exit(0)
