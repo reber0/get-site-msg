@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 21:28:11
- * @LastEditTime: 2023-07-12 12:47:17
+ * @LastEditTime: 2023-08-04 15:32:27
  */
 package entry
 
@@ -16,7 +16,7 @@ import (
 	"github.com/reber0/goutils"
 )
 
-//解析命令行参数，得到所有参数信息
+// 解析命令行参数，得到所有参数信息
 func ParseOptions() {
 	global.Opts.Version = "0.01"
 
@@ -49,7 +49,7 @@ func checkOption() {
 		flag.Usage()
 		os.Exit(0)
 	}
-	if !goutils.IsFileExist(global.Opts.TargetFile) {
+	if !goutils.PathExists(global.Opts.TargetFile) {
 		msg := fmt.Sprintf("目标文件 %s 不存在 !", global.Opts.TargetFile)
 		global.Log.Error(msg)
 		os.Exit(0)
