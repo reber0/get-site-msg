@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 11:30:35
- * @LastEditTime: 2022-09-27 17:01:12
+ * @LastEditTime: 2023-09-12 08:55:17
  */
 package global
 
@@ -10,6 +10,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/remeh/sizedwaitgroup"
 	"go.uber.org/ratelimit"
 	"go.uber.org/zap"
@@ -21,9 +22,9 @@ var Opts struct {
 	TargetFile string
 	Rate       int
 	TimeOut    int
-	WaitTime   int
 	OutPut     string
 	IsHeadless bool
+	IsChrome   bool
 }
 
 type TabCtx struct {
@@ -40,6 +41,8 @@ var (
 	WaitGroup sizedwaitgroup.SizedWaitGroup // 控制总的并发数
 
 	Lock sync.Mutex
+
+	Client *resty.Client
 
 	ChromedpStatus bool // Chromedp 状态
 	ChTabCtx       chan TabCtx

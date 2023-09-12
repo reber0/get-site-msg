@@ -2,7 +2,7 @@
  * @Author: reber
  * @Mail: reber0ask@qq.com
  * @Date: 2022-06-17 11:33:08
- * @LastEditTime: 2023-04-17 08:46:23
+ * @LastEditTime: 2023-09-12 10:58:12
  */
 package core
 
@@ -16,10 +16,66 @@ import (
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 	"github.com/reber0/get-site-msg/global"
-	"github.com/xuri/excelize/v2"
 )
 
-func GetSiteMsg(url string) {
+func ChromeRun() {
+	// 配置 chrome 选项
+	options := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("no-default-browser-check", true),        // 启动 chrome 的时候不检查默认浏览器
+		chromedp.Flag("headless", global.Opts.IsHeadless),      // 是否无头
+		chromedp.Flag("no-sandbox", true),                      // 是否关闭沙盒
+		chromedp.Flag("mute-audio", true),                      // 是否静音
+		chromedp.Flag("hide-scrollbars", false),                // 是否隐藏滚动条
+		chromedp.Flag("ignore-certificate-errors", true),       // 忽略网站证书错误
+		chromedp.Flag("blink-settings", "imagesEnabled=false"), // 禁止加载图片
+		chromedp.UserAgent(`Mozilla/5.0 (Windows NT 10.0; WOW64; rv:78.0) Gecko/20100101 Firefox/78.0`),
+		chromedp.WindowSize(1280, 800),
+	)
+
+	// 创建 chrome 窗口
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), options...)
+	defer cancel()
+	ctx, cancel := chromedp.NewContext(allocCtx)
+	defer cancel()
+
+	// 打开一个空 tab
+	chromedp.Run(ctx, chromedp.Tasks{
+		chromedp.Navigate("about:blank"),
+	})
+
+	for i := 0; i < global.Opts.Rate; i++ {
+		cloneCtx, cancel := chromedp.NewContext(ctx)
+
+		// open blank tab
+		chromedp.Run(cloneCtx, chromedp.Tasks{
+			chromedp.Navigate("about:blank"),
+		})
+
+		var ctxTmp global.TabCtx
+		ctxTmp.Ctx = cloneCtx
+		ctxTmp.Cancel = cancel
+		global.ChTabCtx <- ctxTmp
+	}
+
+	// 开始获取信息
+	for _, targetURL := range global.Targets {
+		if global.ChromedpStatus {
+			global.Limiter.Take()
+			global.WaitGroup.Add()
+			go WorkerChrome(targetURL)
+		} else {
+			break
+		}
+	}
+	global.WaitGroup.Wait()
+
+	close(global.ChTabCtx)
+	for ctx := range global.ChTabCtx {
+		ctx.Cancel()
+	}
+}
+
+func WorkerChrome(url string) {
 	defer global.WaitGroup.Done()
 
 	tabCtx := <-global.ChTabCtx
@@ -36,30 +92,30 @@ func GetSiteMsg(url string) {
 	}
 	targetURL = strings.ReplaceAll(targetURL, ":80/", "/")
 
-	statusCode, title, nowURL, html := httpReq(cloneCtx, targetURL)
+	statusCode, title, nowURL, html := ChromeReq(cloneCtx, targetURL)
 	isHttpsScheme1 := strings.Contains(html, "Instead use the HTTPS scheme to access this URL")
 	isHttpsScheme2 := strings.Contains(html, "The plain HTTP request was sent to HTTPS port")
 	isHttpsScheme3 := strings.Contains(html, "This combination of host and port requires TLS")
 	isHttpsScheme4 := strings.Contains(html, "Client sent an HTTP request to an HTTPS server")
 	if statusCode == 400 && !(isHttpsScheme1 && isHttpsScheme2 && isHttpsScheme3 && isHttpsScheme4) {
-		global.Log.Info(fmt.Sprintf("%s 需要 https 访问", url))
+		// global.Log.Info(fmt.Sprintf("%s 需要 https 访问", url))
 		targetURL = strings.ReplaceAll(targetURL, "http://", "https://")
 		targetURL = strings.ReplaceAll(targetURL, ":443/", "/")
 		targetURL = strings.ReplaceAll(targetURL, ":80/", "/")
-		statusCode, title, nowURL, _ = httpReq(cloneCtx, targetURL)
+		statusCode, title, nowURL, _ = ChromeReq(cloneCtx, targetURL)
 	}
 
 	global.Log.Info(fmt.Sprintf("[%s] [%d] [%s] %s", url, statusCode, title, nowURL))
 
 	global.Lock.Lock()
-	global.Result = append(global.Result, []interface{}{targetURL, statusCode, title, nowURL})
+	global.Result = append(global.Result, []interface{}{url, statusCode, title, nowURL})
 	global.Lock.Unlock()
 
 	// 重新放入 channel
 	global.ChTabCtx <- tabCtx
 }
 
-func httpReq(cloneCtx context.Context, targetURL string) (int64, string, string, string) {
+func ChromeReq(cloneCtx context.Context, targetURL string) (int64, string, string, string) {
 	var statusCode int64
 	var title string
 	var nowURL string
@@ -104,7 +160,7 @@ func httpReq(cloneCtx context.Context, targetURL string) (int64, string, string,
 		// //在这里加上你需要的后续操作，如Navigate，SendKeys，Click等
 		// chromedp.OuterHTML("title", &Title, chromedp.BySearch),
 		// 等待页面渲染
-		chromedp.Sleep(time.Duration(global.Opts.WaitTime) * time.Second),
+		chromedp.Sleep(time.Duration(2) * time.Second),
 		chromedp.Location(&nowURL),
 		chromedp.Title(&title),
 		chromedp.OuterHTML("html", &html),
@@ -122,48 +178,4 @@ func httpReq(cloneCtx context.Context, targetURL string) (int64, string, string,
 	}
 
 	return statusCode, title, nowURL, html
-}
-
-func Save2Excel(SheetName string) {
-	file := excelize.NewFile()
-
-	// 设置筛选条件
-	file.AutoFilter(SheetName, "A1", "D1", "")
-
-	// 设置首行格式
-	titleStyle, _ := file.NewStyle(&excelize.Style{
-		Font: &excelize.Font{
-			Bold: true,
-		},
-		Alignment: &excelize.Alignment{
-			Horizontal: "left",
-		},
-	})
-	file.SetCellStyle(SheetName, "A1", "D1", titleStyle)
-
-	//设置列宽
-	file.SetColWidth(SheetName, "A", "A", 30)
-	file.SetColWidth(SheetName, "B", "B", 10)
-	file.SetColWidth(SheetName, "C", "C", 30)
-	file.SetColWidth(SheetName, "D", "D", 50)
-
-	// 写入首行
-	titleSlice := []interface{}{"原始 URL", "状态码", "标题", "当前 URL"}
-	_ = file.SetSheetRow(SheetName, "A1", &titleSlice)
-
-	// 写入结果
-	for rowID := 0; rowID < len(global.Result); rowID++ {
-		rowContent := global.Result[rowID]
-		cellName, _ := excelize.CoordinatesToCellName(1, rowID+2) // 从第二行开始写
-		if err := file.SetSheetRow(SheetName, cellName, &rowContent); err != nil {
-			global.Log.Error(err.Error())
-		}
-	}
-
-	// 保存工作簿
-	if err := file.SaveAs(global.Opts.OutPut); err != nil {
-		global.Log.Error(err.Error())
-	}
-
-	file.Close()
 }
