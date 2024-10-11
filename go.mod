@@ -1,13 +1,13 @@
 module github.com/reber0/get-site-msg
 
-go 1.19
+go 1.23.2
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/chromedp/cdproto v0.0.0-20220812200530-d0d83820bffc
 	github.com/chromedp/chromedp v0.8.4
 	github.com/go-resty/resty/v2 v2.7.0
-	github.com/reber0/goutils v0.0.12
+	github.com/reber0/goutils v0.3.1
 	github.com/remeh/sizedwaitgroup v1.0.0
 	github.com/xuri/excelize/v2 v2.6.0
 	go.uber.org/ratelimit v0.2.0
